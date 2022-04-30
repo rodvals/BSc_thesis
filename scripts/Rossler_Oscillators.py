@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
 
 
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import copy
-import networkx as nx
+#import networkx as nx
 import scipy
 from scipy.integrate import solve_ivp
 from scipy.integrate import odeint
 import seaborn as sns
+import igraph as ig
 
 
-# In[2]:
 
 
 def motion(q_0, t_span, omegas, K, N, adj):
@@ -55,13 +54,12 @@ def r_mean_parameter(_q_0, _t_span, _omegas, _K , _N, _adj):
     return _r_mean
 
 
-# In[3]:
 
 
 random.seed(0)
 
 # parameters model 
-N = 50
+N = 20
 
 # initial conditions
 q_0 = np.random.rand(3*N)*2*np.pi
@@ -74,37 +72,34 @@ t_span = np.arange(0, t_max, dt)
 a = 0.2
 b = 0.2
 c = 5.7
-r = 1
-sigma = 0
+r = 0.1
+sigma = 8
 
 # network parameters
 p = 0.1 
-k = 10
+k = 3
 
 
-# In[45]:
 
 
-# Generate Erdos Renyi graphs based on probability
-#graph = nx.erdos_renyi_graph(n=N, p=p)
-name_graph = "Watts Strogatz : n = {} k = {} p = {}".format(N, k, p)
-graph = nx.watts_strogatz_graph(n=N, k=k, p=p, seed=0)
-#new figure to plot network graphs
-fig_graph = plt.figure(figsize = (9, 9) )
-fig_graph.add_subplot(2,2,1)
-nx.draw(graph)
-adj= nx.to_numpy_array(graph)
+# name_graph = "Watts Strogatz : n = {} k = {} p = {}".format(N, k, p)
+name_graph = "Erdos Renyi : n = {} p = {}".format(N, k, p)
+graph = ig.Graph.Erdos_Renyi(n=N, p=1, directed=False, loops=False)
+# g_watts_strogatz = ig.Graph.Watts_Strogatz(dim = 1, size = 20, nei = 1, p = 0.2)
+# g_barabasi_albert = ig.Graph.Barabasi(n = N, m = 2 )
+ig.plot(graph)
+adj = graph.get_adjacency()
 
 
-# In[46]:
 
 
+# integrate dynamics 
 sol = odeint(func= rossler, y0 = q_0, t=t_span, args=(a, b, c, r, sigma, N, adj) )
 
 
-# In[47]:
 
 
+# plot coordinates
 plt.close('all')
 #new figure to plot network graphs
 fig = plt.figure(figsize = (9, 9) )
@@ -114,7 +109,7 @@ axs_xy.set(xlabel="x", ylabel="y", title= "XY plot")
 plt.plot(sol[:,0::3][::100], sol[:,1::3][::100])
 
 axs_network = fig.add_subplot(2,2,2)
-nx.draw(graph, ax = axs_network)
+ig.plot(graph, target = axs_network)
 #axs_network.set(title="Erdos-Renyi: p = {}, N = {}".format(p, N))
 axs_network.set(title=name_graph)
 
@@ -129,9 +124,9 @@ axs_yz.set(xlabel="y", ylabel="z", title= "YZ plot")
 plt.show()
 
 
-# In[49]:
 
 
+# plot time vs axis
 fig = plt.figure(figsize = (9, 9) )
 fig.suptitle("Rossler Oscillator N = {5} with parameters: \n a = {0:.6g} b = {1:.6g} c = {2:.6g} r = {3:.6g} sigma = {4:.6g}".format(a, b, c, r, sigma, N))
 axs_xt = fig.add_subplot(2,2,1)
@@ -139,7 +134,7 @@ axs_xt.set(xlabel="x", ylabel="t", title= "t X plot")
 plt.plot(t_span[::100], sol[:,0::3][::100])
 
 axs_network = fig.add_subplot(2,2,2)
-nx.draw(graph, ax = axs_network)
+ig.plot(graph, target = axs_network)
 axs_network.set(title=name_graph)
 
 axs_yt = fig.add_subplot(2, 2, 3)
@@ -151,10 +146,3 @@ plt.plot(t_span[::100], sol[:,2::3][::100])
 axs_zt.set(xlabel="t", ylabel="z", title= "tZ plot")
 
 plt.show()
-
-
-# In[ ]:
-
-
-
-
