@@ -1,2 +1,4 @@
-# Kuramoto_on_graphs
-Kuramoto model applied to some networks
+# Some non linear dynamics simulation in networks with some animations
+ATM implemented:
+- Kuramoto
+- Rössler attractor
